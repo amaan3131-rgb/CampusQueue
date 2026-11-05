@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Staff Dashboard - CampusQueue</title>
+</head>
+<body>
+
+    <h1>Welcome, {{ user.name }}!</h1>
+    <h2>Staff Dashboard</h2>
+
+    <h3>Student Queue</h3>
+
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>Token Number</th>
+            <th>Student ID</th>
+            <th>Service</th>
+            <th>Status</th>
+        </tr>
+
+        {% for token in tokens %}
+        <tr>
+            <td>{{ token.token_number }}</td>
+            <td>{{ token.user_id }}</td>
+            <td>{{ token.service.name }}</td>
+            <td>
+    {{ token.status }}
+
+    {% if token.status == "waiting" %}
+        <a href="{{ url_for('update_token', token_id=token.id, status='serving') }}">
+            Call Student
+        </a>
+    {% elif token.status == "serving" %}
+        <a href="{{ url_for('update_token', token_id=token.id, status='completed') }}">
+            Complete
+        </a>
+    {% endif %}
+</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <a href="/logout">Logout</a>
+
+<h2>Student Appointments</h2>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Student ID</th>
+        <th>Service</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+    </tr>
+
+    {% for appointment in appointments %}
+    <tr>
+        <td>{{ appointment.user_id }}</td>
+        <td>{{ appointment.service.name }}</td>
+        <td>{{ appointment.appointment_date }}</td>
+        <td>{{ appointment.appointment_time }}</td>
+       <td>
+    {{ appointment.status }}
+
+    {% if appointment.status == "booked" %}
+        <a href="{{ url_for('update_appointment', appointment_id=appointment.id, status='confirmed') }}">
+            Confirm
+        </a>
+    {% elif appointment.status == "confirmed" %}
+        <a href="{{ url_for('update_appointment', appointment_id=appointment.id, status='completed') }}">
+            Complete
+        </a>
+    {% endif %}
+</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+</html>

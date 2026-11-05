@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Book Appointment - CampusQueue</title>
+</head>
+<body>
+
+    <h1>Book an Appointment</h1>
+
+    <h3>{{ service.name }}</h3>
+    <p>{{ service.description }}</p>
+
+    <form method="POST">
+
+        <label>Select Date:</label>
+        <input type="date" name="date" required>
+        <br><br>
+
+        <label>Select Time:</label>
+        <input type="time" name="time" required>
+        <br><br>
+
+        <button type="submit">Confirm Appointment</button>
+
+    </form>
+
+    <a href="/dashboard">Back to Dashboard</a>
+
+</body>
+</html>

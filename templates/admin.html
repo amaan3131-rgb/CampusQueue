@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard - CampusQueue</title>
+</head>
+<body>
+
+    <h1>Welcome, {{ user.name }}!</h1>
+    <h2>Admin Dashboard</h2>
+
+    <h3>System Overview</h3>
+
+    <p>Total Users: {{ users|length }}</p>
+    <p>Total Services: {{ services|length }}</p>
+    <p>Total Tokens: {{ tokens|length }}</p>
+    <p>Total Appointments: {{ appointments|length }}</p>
+
+    <h3>Queue Analytics</h3>
+
+    <h3>All Generated Tokens</h3>
+
+    <h3>All Student Appointments</h3>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Appointment ID</th>
+        <th>Student ID</th>
+        <th>Service</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+    </tr>
+
+    {% for appointment in appointments %}
+    <tr>
+        <td>{{ appointment.id }}</td>
+        <td>{{ appointment.user_id }}</td>
+        <td>{{ appointment.service.name }}</td>
+        <td>{{ appointment.appointment_date }}</td>
+        <td>{{ appointment.appointment_time }}</td>
+        <td>{{ appointment.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Token Number</th>
+        <th>Student ID</th>
+        <th>Service</th>
+        <th>Status</th>
+    </tr>
+
+    {% for token in tokens %}
+    <tr>
+        <td>{{ token.token_number }}</td>
+        <td>{{ token.user_id }}</td>
+        <td>{{ token.service.name }}</td>
+        <td>{{ token.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+    <p>Waiting Tokens: {{ waiting_tokens }}</p>
+
+    <p>Currently Serving: {{ serving_tokens }}</p>
+
+     <p>Completed Tokens: {{ completed_tokens }}</p>
+
+    <h3>Registered Users</h3>
+
+    <table border="1" cellpadding="10">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Role</th>
+        </tr>
+
+        {% for person in users %}
+        <tr>
+            <td>{{ person.id }}</td>
+            <td>{{ person.name }}</td>
+            <td>{{ person.email }}</td>
+            <td>{{ person.role }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+    <h3>Add New Service</h3>
+
+    <h3>Available Services</h3>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>ID</th>
+        <th>Service Name</th>
+        <th>Description</th>
+    </tr>
+
+    {% for service in services %}
+    <tr>
+        <td>{{ service.id }}</td>
+        <td>{{ service.name }}</td>
+        <td>{{ service.description }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<form method="POST" action="{{ url_for('add_service') }}">
+
+    <input
+        type="text"
+        name="name"
+        placeholder="Service Name"
+        required
+    >
+
+    <br><br>
+
+    <input
+        type="text"
+        name="description"
+        placeholder="Service Description"
+        required
+    >
+
+    <br><br>
+
+    <button type="submit">Add Service</button>
+
+</form>
+
+    <br>
+    <a href="/logout">Logout</a>
+<h3>Add New Staff Member</h3>
+
+<form method="POST" action="{{ url_for('add_staff') }}">
+
+    <input type="text" name="name"
+           placeholder="Staff Name" required>
+    <br><br>
+
+    <input type="email" name="email"
+           placeholder="Staff Email" required>
+    <br><br>
+
+    <input type="password" name="password"
+           placeholder="Staff Password" required>
+    <br><br>
+
+    <button type="submit">Create Staff Account</button>
+
+</form>
+</body>
+</html>

@@ -1,0 +1,78 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Dashboard - CampusQueue</title>
+</head>
+<h3>My Token History</h3>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Token Number</th>
+        <th>Service</th>
+        <th>Status</th>
+    </tr>
+
+    {% for token in tokens %}
+    <tr>
+        <td>{{ token.token_number }}</td>
+        <td>{{ token.service.name }}</td>
+        <td>{{ token.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+<body>
+
+    <h1>Welcome, {{ user.name }}!</h1>
+    <a href="/logout">Logout</a>
+    <h2>Student Dashboard</h2>
+    
+    <h3>Available Services</h3>
+
+<ul>
+    {% for service in services %}
+        <li>
+            <h4>{{ service.name }}</h4>
+            <p>{{ service.description }}</p>
+        </li>
+    {% endfor %}
+</ul>
+
+    <h3>Generate Token</h3>
+
+<ul>
+    {% for service in services %}
+        <li>
+            {{ service.name }}
+            <a href="{{ url_for('generate_token', service_id=service.id) }}">
+                Generate Token
+            </a>
+
+            <a href="{{ url_for('book_appointment', service_id=service.id) }}">
+                Book Appointment
+              </a>
+        </li>
+    {% endfor %}
+</ul>
+<h3>My Appointment History</h3>
+
+<table border="1" cellpadding="10">
+    <tr>
+        <th>Service</th>
+        <th>Date</th>
+        <th>Time</th>
+        <th>Status</th>
+    </tr>
+
+    {% for appointment in appointments %}
+    <tr>
+        <td>{{ appointment.service.name }}</td>
+        <td>{{ appointment.appointment_date }}</td>
+        <td>{{ appointment.appointment_time }}</td>
+        <td>{{ appointment.status }}</td>
+    </tr>
+    {% endfor %}
+</table>
+</body>
+</html>
+
