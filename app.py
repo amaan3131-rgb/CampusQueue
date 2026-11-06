@@ -77,7 +77,7 @@ def register():
             return "Please enter a valid email address!"
 
         # Validate password
-                # Validate password
+                
         if len(password) < 8:
             return "Password must contain at least 8 characters!"
 
@@ -254,7 +254,7 @@ def staff_dashboard():
 
     user = db.session.get(User, session["user_id"])
 
-    if user.role != "staff":
+    if not user or user.role != "staff":
         return "Access denied! Staff only."
 
     tokens = Token.query.order_by(Token.id.asc()).all()
