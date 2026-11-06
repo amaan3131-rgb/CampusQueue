@@ -1,5 +1,5 @@
 
-from turtle import position
+from flask_wtf.csrf import CSRFProtect
 
 from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
@@ -7,6 +7,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
 
 app = Flask(__name__)
+csrf = CSRFProtect(app)
 app.config.from_object(Config)
 
 db = SQLAlchemy(app)
@@ -71,7 +72,7 @@ def register():
         db.session.add(new_user)
         db.session.commit()
 
-        return "Registration successful!"
+        return render_template("registration_success.html")
 
     return render_template("register.html")
 @app.route("/login", methods=["GET", "POST"])

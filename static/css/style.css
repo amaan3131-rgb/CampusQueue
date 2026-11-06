@@ -439,3 +439,132 @@ body {
     }
 }
 
+
+/* Login and Registration Pages */
+
+.auth-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #e8efff, #f5f7ff);
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+.auth-container {
+    width: 90%;
+    max-width: 420px;
+    background: white;
+    padding: 40px;
+    border-radius: 16px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    box-sizing: border-box;
+}
+
+.auth-container h1 {
+    color: #2446b5;
+    margin-bottom: 8px;
+    font-size: 32px;
+}
+
+.auth-subtitle {
+    color: #64748b;
+    margin-bottom: 30px;
+}
+
+.auth-container h2 {
+    color: #1e293b;
+    margin-bottom: 8px;
+}
+
+.auth-description {
+    color: #64748b;
+    margin-bottom: 25px;
+}
+
+.auth-container form {
+    text-align: left;
+}
+
+.auth-container label {
+    display: block;
+    color: #334155;
+    font-weight: bold;
+    margin: 15px 0 8px;
+}
+
+.auth-container input {
+    width: 100%;
+    padding: 13px;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
+    box-sizing: border-box;
+    font-size: 15px;
+}
+
+.auth-container input:focus {
+    outline: none;
+    border-color: #2446b5;
+}
+
+.auth-container button {
+    width: 100%;
+    margin-top: 25px;
+    padding: 14px;
+    background: #2446b5;
+    color: white;
+    border: none;
+    border-radius: 7px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.auth-container button:hover {
+    background: #18358f;
+}
+
+.auth-footer {
+    margin-top: 25px;
+    color: #64748b;
+}
+
+.auth-container a {
+    color: #2446b5;
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.auth-container a:hover {
+    text-decoration: underline;
+}
+
+.back-home {
+    display: inline-block;
+    margin-top: 15px;
+}
+
+
+/* Appointment Booking Service Details */
+
+.appointment-service {
+    background: #f0f4ff;
+    padding: 15px;
+    border-radius: 10px;
+    margin: 20px 0;
+    text-align: left;
+}
+
+.appointment-service h3 {
+    color: #2446b5;
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.appointment-service p {
+    color: #64748b;
+    margin-bottom: 0;
+    line-height: 1.5;
+}

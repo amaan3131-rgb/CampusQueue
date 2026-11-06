@@ -131,6 +131,7 @@
 <h3>Add New Service</h3>
 
 <form method="POST" action="{{ url_for('add_service') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <input
         type="text"
@@ -159,6 +160,7 @@
 <h3>Add New Staff Member</h3>
 
 <form method="POST" action="{{ url_for('add_staff') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
     <input type="text" name="name"
            placeholder="Staff Name" required>

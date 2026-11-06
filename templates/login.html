@@ -3,20 +3,49 @@
 <html>
 <head>
     <title>Login - CampusQueue</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <h2>Login to CampusQueue</h2>
 
-    <form method="POST">
-        <input type="email" name="email" placeholder="Email Address" required>
-        <br><br>
+<body class="auth-page">
 
-        <input type="password" name="password" placeholder="Password" required>
-        <br><br>
+    <div class="auth-container">
 
-        <button type="submit">Login</button>
-    </form>
+        <h1>CampusQueue</h1>
+        <p class="auth-subtitle">Smart Campus Service Management</p>
 
-    <p>New user? <a href="/register">Register</a></p>
+        <h2>Welcome Back!</h2>
+        <p class="auth-description">Login to access your account</p>
+
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <label>Email Address</label>
+            <input
+                type="email"
+                name="email"
+                placeholder="Enter your email"
+                required
+            >
+
+            <label>Password</label>
+            <input
+                type="password"
+                name="password"
+                placeholder="Enter your password"
+                required
+            >
+
+            <button type="submit">Login</button>
+
+        </form>
+
+        <p class="auth-footer">
+            New user? <a href="/register">Create an account</a>
+        </p>
+
+        <a href="/" class="back-home">Back to Home</a>
+
+    </div>
+
 </body>
 </html>
