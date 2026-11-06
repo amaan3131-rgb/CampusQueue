@@ -2,26 +2,41 @@
 <html>
 <head>
     <title>Admin Dashboard - CampusQueue</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <div class="dashboard-container">
 
     <h1>Welcome, {{ user.name }}!</h1>
     <h2>Admin Dashboard</h2>
 
     <h3>System Overview</h3>
 
-    <p>Total Users: {{ users|length }}</p>
-    <p>Total Services: {{ services|length }}</p>
-    <p>Total Tokens: {{ tokens|length }}</p>
-    <p>Total Appointments: {{ appointments|length }}</p>
+    <div class="stats-grid">
+    <div class="stat-card">
+        <h3>Total Users</h3>
+        <p>{{ users|length }}</p>
+    </div>
 
-    <h3>Queue Analytics</h3>
+    <div class="stat-card">
+        <h3>Total Services</h3>
+        <p>{{ services|length }}</p>
+    </div>
 
-    <h3>All Generated Tokens</h3>
+    <div class="stat-card">
+        <h3>Total Tokens</h3>
+        <p>{{ tokens|length }}</p>
+    </div>
 
-    <h3>All Student Appointments</h3>
+    <div class="stat-card">
+        <h3>Total Appointments</h3>
+        <p>{{ appointments|length }}</p>
+    </div>
+</div>
+   
+<h3>All Student Appointments</h3>
 
-<table border="1" cellpadding="10">
+<table class="data-table">
     <tr>
         <th>Appointment ID</th>
         <th>Student ID</th>
@@ -43,7 +58,9 @@
     {% endfor %}
 </table>
 
-<table border="1" cellpadding="10">
+<h3>All Generated Tokens</h3>
+
+<table class="data-table">
     <tr>
         <th>Token Number</th>
         <th>Student ID</th>
@@ -59,18 +76,22 @@
         <td>{{ token.status }}</td>
     </tr>
     {% endfor %}
+    
 </table>
+
+    <h3>Queue Analytics</h3>
 
     <p>Waiting Tokens: {{ waiting_tokens }}</p>
 
     <p>Currently Serving: {{ serving_tokens }}</p>
 
-     <p>Completed Tokens: {{ completed_tokens }}</p>
+    <p>Completed Tokens: {{ completed_tokens }}</p>
 
     <h3>Registered Users</h3>
 
-    <table border="1" cellpadding="10">
+    <table class="data-table">
         <tr>
+            
             <th>ID</th>
             <th>Name</th>
             <th>Email</th>
@@ -87,11 +108,11 @@
         {% endfor %}
     </table>
 
-    <h3>Add New Service</h3>
+    
+<h3>Available Services</h3>
+   
 
-    <h3>Available Services</h3>
-
-<table border="1" cellpadding="10">
+<table class="data-table">
     <tr>
         <th>ID</th>
         <th>Service Name</th>
@@ -106,6 +127,8 @@
     </tr>
     {% endfor %}
 </table>
+
+<h3>Add New Service</h3>
 
 <form method="POST" action="{{ url_for('add_service') }}">
 
@@ -132,7 +155,7 @@
 </form>
 
     <br>
-    <a href="/logout">Logout</a>
+   <a href="/logout" class="logout-btn">Logout</a>
 <h3>Add New Staff Member</h3>
 
 <form method="POST" action="{{ url_for('add_staff') }}">
@@ -152,5 +175,6 @@
     <button type="submit">Create Staff Account</button>
 
 </form>
+</div>
 </body>
 </html>

@@ -2,15 +2,18 @@
 <html>
 <head>
     <title>Staff Dashboard - CampusQueue</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <div class="dashboard-container">
 
     <h1>Welcome, {{ user.name }}!</h1>
-    <h2>Staff Dashboard</h2>
+    <h2 class="dashboard-heading">Staff Dashboard</h2>
+<p class="dashboard-subtitle">Manage student queues and appointments efficiently.</p>
 
     <h3>Student Queue</h3>
 
-    <table border="1" cellpadding="10">
+    <table class="data-table">
         <tr>
             <th>Token Number</th>
             <th>Student ID</th>
@@ -40,11 +43,11 @@
         {% endfor %}
     </table>
 
-    <a href="/logout">Logout</a>
+    <a href="/logout" class="logout-btn">Logout</a>
 
 <h2>Student Appointments</h2>
 
-<table border="1" cellpadding="10">
+<table class="data-table">
     <tr>
         <th>Student ID</th>
         <th>Service</th>
@@ -76,4 +79,5 @@
     {% endfor %}
 </table>
 </body>
+</div>
 </html>
