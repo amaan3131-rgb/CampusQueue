@@ -156,7 +156,10 @@
 </form>
 
     <br>
-   <a href="/logout" class="logout-btn">Logout</a>
+   <form method="POST" action="{{ url_for('logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="logout-btn">Logout</button>
+</form>
 <h3>Add New Staff Member</h3>
 
 <form method="POST" action="{{ url_for('add_staff') }}">

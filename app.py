@@ -1,4 +1,6 @@
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_wtf.csrf import CSRFProtect
 
 from flask import Flask, render_template, request, redirect, url_for, session
@@ -8,6 +10,11 @@ from config import Config
 
 app = Flask(__name__)
 csrf = CSRFProtect(app)
+limiter = Limiter(
+    get_remote_address,
+    app=app,
+    default_limits=[]
+)
 app.config.from_object(Config)
 
 db = SQLAlchemy(app)
@@ -52,15 +59,43 @@ def home():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        name = request.form["name"]
-        email = request.form["email"]
-        password = request.form["password"]
 
+        name = request.form.get("name", "").strip()
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        # Check empty fields
+        if not name or not email or not password:
+            return "All fields are required!"
+
+        # Validate name
+        if len(name) < 2 or len(name) > 100:
+            return "Name must be between 2 and 100 characters!"
+
+        # Validate email
+        if "@" not in email or "." not in email.split("@")[-1]:
+            return "Please enter a valid email address!"
+
+        # Validate password
+                # Validate password
+        if len(password) < 8:
+            return "Password must contain at least 8 characters!"
+
+        if not any(char.isupper() for char in password):
+            return "Password must contain at least one uppercase letter!"
+
+        if not any(char.islower() for char in password):
+            return "Password must contain at least one lowercase letter!"
+
+        if not any(char.isdigit() for char in password):
+            return "Password must contain at least one number!"
+        # Check existing user
         existing_user = User.query.filter_by(email=email).first()
 
         if existing_user:
             return "Email already registered!"
 
+        # Hash password
         hashed_password = generate_password_hash(password)
 
         new_user = User(
@@ -75,28 +110,42 @@ def register():
         return render_template("registration_success.html")
 
     return render_template("register.html")
+
 @app.route("/login", methods=["GET", "POST"])
+@limiter.limit("5 per minute")
 def login():
     if request.method == "POST":
-        email = request.form["email"]
-        password = request.form["password"]
 
+        email = request.form.get("email", "").strip().lower()
+        password = request.form.get("password", "")
+
+        # Validate empty fields
+        if not email or not password:
+            return "Email and password are required!"
+
+        # Find user
         user = User.query.filter_by(email=email).first()
 
         if user and check_password_hash(user.password, password):
+
+            # Clear old session
+            session.clear()
+
+            # Create new session
             session["user_id"] = user.id
 
             if user.role == "admin":
                 return redirect(url_for("admin_dashboard"))
+
             elif user.role == "staff":
                 return redirect(url_for("staff_dashboard"))
+
             else:
                 return redirect(url_for("dashboard"))
 
         return "Invalid email or password!"
 
     return render_template("login.html")
-
 @app.route("/dashboard")
 def dashboard():
     if "user_id" not in session:
@@ -116,11 +165,15 @@ def dashboard():
         tokens=tokens,
         appointments=appointments
     )
-@app.route("/generate-token/<int:service_id>")
+@app.route("/generate-token/<int:service_id>", methods=["POST"])
 def generate_token(service_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    user = db.session.get(User, session["user_id"])
+
+    if not user or user.role != "student":
+        return "Access denied! Students only."
     service = db.session.get(Service, service_id)
 
     if not service:
@@ -171,14 +224,19 @@ def book_appointment(service_id):
 
     return render_template("book_appointment.html", service=service)
 
-@app.route("/cancel-token/<int:token_id>")
+@app.route("/cancel-token/<int:token_id>", methods=["POST"])
 def cancel_token(token_id):
     if "user_id" not in session:
         return redirect(url_for("login"))
 
+    user = db.session.get(User, session["user_id"])
+
+    if not user or user.role != "student":
+        return "Access denied! Students only."
+
     token = db.session.get(Token, token_id)
 
-    if not token or token.user_id != session["user_id"]:
+    if not token or token.user_id != user.id:
         return "Token not found!"
 
     if token.status != "waiting":
@@ -250,8 +308,14 @@ def add_service():
     if not user or user.role != "admin":
         return "Access denied!"
 
-    name = request.form["name"]
-    description = request.form["description"]
+    name = request.form.get("name", "").strip()
+    description = request.form.get("description", "").strip()
+
+    if not name or not description:
+        return "Service name and description are required!"
+
+    if len(name) > 100 or len(description) > 255:
+        return "Service name or description is too long!"
 
     new_service = Service(
         name=name,
@@ -263,6 +327,7 @@ def add_service():
 
     return redirect(url_for("admin_dashboard"))
 
+
 @app.route("/add-staff", methods=["POST"])
 def add_staff():
     if "user_id" not in session:
@@ -273,13 +338,40 @@ def add_staff():
     if not user or user.role != "admin":
         return "Access denied!"
 
-    name = request.form["name"]
-    email = request.form["email"]
-    password = request.form["password"]
+    name = request.form.get("name", "").strip()
+    email = request.form.get("email", "").strip().lower()
+    password = request.form.get("password", "")
 
+    # Validate required fields
+    if not name or not email or not password:
+        return "All fields are required!"
+
+    # Validate name
+    if len(name) < 2 or len(name) > 100:
+        return "Staff name must be between 2 and 100 characters!"
+
+    # Validate email
+    if "@" not in email or "." not in email.split("@")[-1]:
+        return "Please enter a valid email address!"
+
+    # Validate password
+    if len(password) < 8:
+        return "Password must contain at least 8 characters!"
+
+    if not any(char.isupper() for char in password):
+        return "Password must contain an uppercase letter!"
+
+    if not any(char.islower() for char in password):
+        return "Password must contain a lowercase letter!"
+
+    if not any(char.isdigit() for char in password):
+        return "Password must contain a number!"
+
+    # Check existing user
     if User.query.filter_by(email=email).first():
         return "Email already registered!"
 
+    # Create staff account
     new_staff = User(
         name=name,
         email=email,
@@ -292,7 +384,8 @@ def add_staff():
 
     return redirect(url_for("admin_dashboard"))
 
-@app.route("/update-token/<int:token_id>/<status>")
+
+@app.route("/update-token/<int:token_id>/<status>", methods=["POST"])
 def update_token(token_id, status):
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -310,12 +403,20 @@ def update_token(token_id, status):
     if not token:
         return "Token not found!"
 
+    if status == "serving" and token.status != "waiting":
+        return "Only waiting tokens can be called!"
+
+    if status == "completed" and token.status != "serving":
+        return "Only serving tokens can be completed!"
+
     token.status = status
     db.session.commit()
 
     return redirect(url_for("staff_dashboard"))
 
-@app.route("/update-appointment/<int:appointment_id>/<status>")
+    return redirect(url_for("staff_dashboard"))
+
+@app.route("/update-appointment/<int:appointment_id>/<status>", methods=["POST"])
 def update_appointment(appointment_id, status):
     if "user_id" not in session:
         return redirect(url_for("login"))
@@ -333,16 +434,21 @@ def update_appointment(appointment_id, status):
     if not appointment:
         return "Appointment not found!"
 
+    if status == "confirmed" and appointment.status != "booked":
+        return "Only booked appointments can be confirmed!"
+
+    if status == "completed" and appointment.status != "confirmed":
+        return "Only confirmed appointments can be completed!"
+
     appointment.status = status
     db.session.commit()
 
     return redirect(url_for("staff_dashboard"))
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
     session.clear()
     return redirect(url_for("login"))
-
 
 if __name__ == "__main__":
     app.run(debug=True)

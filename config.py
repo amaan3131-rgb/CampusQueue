@@ -4,12 +4,23 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-password = quote_plus(os.getenv("DB_PASSWORD", ""))
+db_password = os.getenv("DB_PASSWORD")
+secret_key = os.getenv("SECRET_KEY")
+
+if not db_password:
+    raise ValueError("DB_PASSWORD is missing from .env file")
+
+if not secret_key:
+    raise ValueError("SECRET_KEY is missing from .env file")
+
 
 class Config:
-    SECRET_KEY = os.getenv("SECRET_KEY")
+    SECRET_KEY = secret_key
 
-    SQLALCHEMY_DATABASE_URI = f"mysql+pymysql://root:{password}@localhost/campusqueue"
+    SQLALCHEMY_DATABASE_URI = (
+        f"mysql+pymysql://root:{quote_plus(db_password)}@localhost/campusqueue"
+    )
+
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     SESSION_COOKIE_HTTPONLY = True

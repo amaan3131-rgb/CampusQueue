@@ -30,20 +30,26 @@
     {{ token.status }}
 
     {% if token.status == "waiting" %}
-        <a href="{{ url_for('update_token', token_id=token.id, status='serving') }}">
-            Call Student
-        </a>
-    {% elif token.status == "serving" %}
-        <a href="{{ url_for('update_token', token_id=token.id, status='completed') }}">
-            Complete
-        </a>
-    {% endif %}
+    <form method="POST" action="{{ url_for('update_token', token_id=token.id, status='serving') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Call Student</button>
+    </form>
+
+{% elif token.status == "serving" %}
+    <form method="POST" action="{{ url_for('update_token', token_id=token.id, status='completed') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Complete</button>
+    </form>
+{% endif %}
 </td>
         </tr>
         {% endfor %}
     </table>
 
-    <a href="/logout" class="logout-btn">Logout</a>
+    <form method="POST" action="{{ url_for('logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="logout-btn">Logout</button>
+</form>
 
 <h2>Student Appointments</h2>
 
@@ -66,14 +72,17 @@
     {{ appointment.status }}
 
     {% if appointment.status == "booked" %}
-        <a href="{{ url_for('update_appointment', appointment_id=appointment.id, status='confirmed') }}">
-            Confirm
-        </a>
-    {% elif appointment.status == "confirmed" %}
-        <a href="{{ url_for('update_appointment', appointment_id=appointment.id, status='completed') }}">
-            Complete
-        </a>
-    {% endif %}
+    <form method="POST" action="{{ url_for('update_appointment', appointment_id=appointment.id, status='confirmed') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Confirm</button>
+    </form>
+
+{% elif appointment.status == "confirmed" %}
+    <form method="POST" action="{{ url_for('update_appointment', appointment_id=appointment.id, status='completed') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit">Complete</button>
+    </form>
+{% endif %}
 </td>
     </tr>
     {% endfor %}

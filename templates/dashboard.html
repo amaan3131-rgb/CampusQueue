@@ -15,20 +15,34 @@
         <th>Token Number</th>
         <th>Service</th>
         <th>Status</th>
+        <th>Action</th>
     </tr>
 
     {% for token in tokens %}
-    <tr>
-        <td>{{ token.token_number }}</td>
-        <td>{{ token.service.name }}</td>
-        <td>{{ token.status }}</td>
-    </tr>
-    {% endfor %}
+<tr>
+    <td>{{ token.token_number }}</td>
+    <td>{{ token.service.name }}</td>
+    <td>{{ token.status }}</td>
+    <td>
+        {% if token.status == "waiting" %}
+            <form method="POST" action="{{ url_for('cancel_token', token_id=token.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Cancel Token</button>
+            </form>
+        {% else %}
+            Not Available
+        {% endif %}
+    </td>
+</tr>
+{% endfor %}
 </table>
 <body>
 
     
-    <a href="/logout" class="logout-btn">Logout</a>
+    <form method="POST" action="{{ url_for('logout') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="logout-btn">Logout</button>
+</form>
     
     
     <h3 class="section-title">Available Services</h3>
@@ -48,9 +62,10 @@
     {% for service in services %}
         <li>
             {{ service.name }}
-            <a href="{{ url_for('generate_token', service_id=service.id) }}">
-                Generate Token
-            </a>
+            <form method="POST" action="{{ url_for('generate_token', service_id=service.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit">Generate Token</button>
+</form>
 
             <a href="{{ url_for('book_appointment', service_id=service.id) }}">
                 Book Appointment
