@@ -183,4 +183,17 @@ It helps students save time, enables staff to manage requests efficiently, and g
 
 ---
 
+---
+
+## ☁️ Cloud Deployment
+
+CampusQueue uses a hybrid cloud architecture:
+
+- **Application Hosting:** Vercel
+- **Database Hosting:** Azure Database for MySQL
+- **Backend Framework:** Flask
+- **Database:** MySQL
+
+The application is being prepared for cloud deployment. Deployment status will be updated after successful production deployment.
+
 ⭐ If you find this project interesting, consider giving the repository a star!
