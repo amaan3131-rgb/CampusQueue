@@ -87,27 +87,52 @@
 
     <p>Completed Tokens: {{ completed_tokens }}</p>
 
-    <h3>Registered Users</h3>
+    <h3>Registered Students</h3>
 
-    <table class="data-table">
-        <tr>
-            
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-        </tr>
+<table class="data-table">
+    <tr>
+        <th>ID</th>
+        <th>Student Name</th>
+        <th>Email</th>
+        <th>Role</th>
+    </tr>
 
-        {% for person in users %}
-        <tr>
-            <td>{{ person.id }}</td>
-            <td>{{ person.name }}</td>
-            <td>{{ person.email }}</td>
-            <td>{{ person.role }}</td>
-        </tr>
-        {% endfor %}
-    </table>
+    {% for person in students %}
+    <tr>
+        <td>{{ person.id }}</td>
+        <td>{{ person.name }}</td>
+        <td>{{ person.email }}</td>
+        <td>{{ person.role }}</td>
+    </tr>
+    {% endfor %}
+</table>
 
+
+<h3>Registered Staff Members</h3>
+
+<table class="data-table">
+    <tr>
+        <th>ID</th>
+        <th>Staff Name</th>
+        <th>Email</th>
+        <th>Assigned Service</th>
+    </tr>
+
+    {% for person in staff_members %}
+    <tr>
+        <td>{{ person.id }}</td>
+        <td>{{ person.name }}</td>
+        <td>{{ person.email }}</td>
+        <td>
+            {% if person.assigned_service %}
+                {{ person.assigned_service.name }}
+            {% else %}
+                Not Assigned
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</table>
     
 <h3>Available Services</h3>
    
@@ -176,6 +201,17 @@
     <input type="password" name="password"
            placeholder="Staff Password" required>
     <br><br>
+    <label>Assign Service:</label>
+<select name="service_id" required>
+    <option value="">Select a Service</option>
+
+    {% for service in services %}
+    <option value="{{ service.id }}">
+        {{ service.name }}
+    </option>
+    {% endfor %}
+</select>
+<br><br>
 
     <button type="submit">Create Staff Account</button>
 

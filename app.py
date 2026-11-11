@@ -7,6 +7,7 @@ from flask import Flask, render_template, request, redirect, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from config import Config
+from datetime import datetime
 
 app = Flask(__name__)
 csrf = CSRFProtect(app)
@@ -26,6 +27,14 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default="student")
+
+    service_id = db.Column(
+        db.Integer,
+        db.ForeignKey("service.id"),
+        nullable=True
+    )
+
+    assigned_service = db.relationship("Service")
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -54,6 +63,11 @@ class Appointment(db.Model):
 @app.route("/")
 def home():
     return render_template("index.html")
+
+@app.route("/services")
+def services():
+    all_services = Service.query.all()
+    return render_template("services.html", services=all_services)
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -157,14 +171,34 @@ def dashboard():
     services = Service.query.all()
     tokens = Token.query.filter_by(user_id=user.id).all()
     appointments = Appointment.query.filter_by(user_id=user.id).all()
+    total_appointments = len(appointments)
+
+    booked_appointments = sum(
+    1 for appointment in appointments
+    if appointment.status == "booked"
+    )
+
+    completed_appointments = sum(
+    1 for appointment in appointments
+    if appointment.status == "completed"
+    )
+
+    cancelled_appointments = sum(
+    1 for appointment in appointments
+    if appointment.status == "cancelled"
+   )
 
     return render_template(
-        "dashboard.html",
-        user=user,
-        services=services,
-        tokens=tokens,
-        appointments=appointments
-    )
+    "dashboard.html",
+    user=user,
+    services=services,
+    tokens=tokens,
+    appointments=appointments,
+    total_appointments=total_appointments,
+    booked_appointments=booked_appointments,
+    completed_appointments=completed_appointments,
+    cancelled_appointments=cancelled_appointments
+)
 @app.route("/generate-token/<int:service_id>", methods=["POST"])
 def generate_token(service_id):
     if "user_id" not in session:
@@ -210,9 +244,60 @@ def book_appointment(service_id):
         return "Service not found!"
 
     if request.method == "POST":
+        selected_date = request.form.get("date")
+        selected_time = request.form.get("time")
+
+        try:
+            appointment_date = datetime.strptime(
+                selected_date, "%Y-%m-%d"
+            ).date()
+
+            appointment_time = datetime.strptime(
+                selected_time, "%H:%M"
+            ).time()
+
+            today = datetime.today().date()
+
+            if appointment_date < today:
+                return "Past dates are not allowed!"
+
+            if appointment_date == today and appointment_time <= datetime.now().time():
+                return "You cannot book an appointment for a past time!"
+
+            if appointment_date.weekday() == 6:
+                return "Appointments are not available on Sundays!"
+
+            if appointment_time < datetime.strptime("10:00", "%H:%M").time():
+                return "Appointments start at 10:00 AM!"
+
+            if appointment_time >= datetime.strptime("16:00", "%H:%M").time():
+                return "Appointments are closed after 4:00 PM!"
+
+            if (datetime.strptime("13:00", "%H:%M").time()
+                <= appointment_time
+                 < datetime.strptime("14:00", "%H:%M").time()):
+                    return "Appointments are unavailable during the 1 PM to 2 PM lunch break!"
+
+            if appointment_time.minute % 15 != 0:
+                return "Please select a valid 15-minute slot!"
+
+        except (ValueError, TypeError):
+            return "Invalid appointment date or time!"
+
+        existing_appointments = Appointment.query.filter_by(
+                appointment_date=selected_date,
+                appointment_time=selected_time,
+                service_id=service_id
+                        ).filter(
+                Appointment.status.in_(["booked", "confirmed"])
+            ).count()
+
+        if existing_appointments >= 10:
+                return "Sorry! This time slot is fully booked. Maximum 10 students are allowed."
+
         appointment = Appointment(
-            appointment_date=request.form["date"],
-            appointment_time=request.form["time"],
+            appointment_date=selected_date,
+            appointment_time=selected_time,
             user_id=session["user_id"],
             service_id=service_id
         )
@@ -222,7 +307,13 @@ def book_appointment(service_id):
 
         return redirect(url_for("dashboard"))
 
-    return render_template("book_appointment.html", service=service)
+    return render_template(
+    "book_appointment.html",
+    service=service,
+    today=datetime.today().strftime("%Y-%m-%d")
+)
+
+
 
 @app.route("/cancel-token/<int:token_id>", methods=["POST"])
 def cancel_token(token_id):
@@ -247,6 +338,28 @@ def cancel_token(token_id):
 
     return redirect(url_for("dashboard"))
 
+@app.route("/cancel-appointment/<int:appointment_id>", methods=["POST"])
+def cancel_appointment(appointment_id):
+
+    if "user_id" not in session:
+        return redirect(url_for("login"))
+
+    appointment = db.session.get(Appointment, appointment_id)
+
+    if not appointment:
+        return "Appointment not found!"
+
+    if appointment.user_id != session["user_id"]:
+        return "Access denied!"
+
+    if appointment.status != "booked":
+        return "Only booked appointments can be cancelled!"
+
+    appointment.status = "cancelled"
+    db.session.commit()
+
+    return redirect(url_for("dashboard"))
+
 @app.route("/staff")
 def staff_dashboard():
     if "user_id" not in session:
@@ -257,15 +370,43 @@ def staff_dashboard():
     if not user or user.role != "staff":
         return "Access denied! Staff only."
 
-    tokens = Token.query.order_by(Token.id.asc()).all()
-    appointments = Appointment.query.order_by(Appointment.id.asc()).all()
+    if not user.service_id:
+        return "No service is assigned to this staff account. Please contact the administrator."
+
+    tokens = Token.query.filter_by(
+    service_id=user.service_id
+    ).order_by(Token.id.asc()).all()
+
+    appointments = Appointment.query.filter_by(
+    service_id=user.service_id
+    ).order_by(Appointment.id.asc()).all()
+    total_appointments = len(appointments)
+
+    booked_appointments = sum(
+    1 for appointment in appointments
+    if appointment.status == "booked"
+)
+
+    confirmed_appointments = sum(
+    1 for appointment in appointments
+    if appointment.status == "confirmed"
+)
+
+    completed_appointments = sum(
+    1 for appointment in appointments
+    if appointment.status == "completed"
+) 
 
     return render_template(
-        "staff.html",
-        user=user,
-        tokens=tokens,
-        appointments=appointments
-    )
+    "staff.html",
+    user=user,
+    tokens=tokens,
+    appointments=appointments,
+    total_appointments=total_appointments,
+    booked_appointments=booked_appointments,
+    confirmed_appointments=confirmed_appointments,
+    completed_appointments=completed_appointments
+)
 
 @app.route("/admin")
 def admin_dashboard():
@@ -278,6 +419,11 @@ def admin_dashboard():
         return "Access denied! Admin only."
 
     users = User.query.all()
+
+    students = User.query.filter_by(role="student").all()
+
+    staff_members = User.query.filter_by(role="staff").all()
+
     services = Service.query.all()
     tokens = Token.query.all()
     appointments = Appointment.query.all()
@@ -290,6 +436,8 @@ def admin_dashboard():
         "admin.html",
         user=user,
         users=users,
+        students=students,
+        staff_members=staff_members,
         services=services,
         tokens=tokens,
         appointments=appointments,
@@ -341,11 +489,15 @@ def add_staff():
     name = request.form.get("name", "").strip()
     email = request.form.get("email", "").strip().lower()
     password = request.form.get("password", "")
+    service_id = request.form.get("service_id", type=int)
 
     # Validate required fields
-    if not name or not email or not password:
+    if not name or not email or not password or not service_id:
         return "All fields are required!"
+    service = db.session.get(Service, service_id)
 
+    if not service:
+       return "Please select a valid service!"
     # Validate name
     if len(name) < 2 or len(name) > 100:
         return "Staff name must be between 2 and 100 characters!"
@@ -373,11 +525,12 @@ def add_staff():
 
     # Create staff account
     new_staff = User(
-        name=name,
-        email=email,
-        password=generate_password_hash(password),
-        role="staff"
-    )
+    name=name,
+    email=email,
+    password=generate_password_hash(password),
+    role="staff",
+    service_id=service.id
+)
 
     db.session.add(new_staff)
     db.session.commit()
@@ -402,6 +555,11 @@ def update_token(token_id, status):
 
     if not token:
         return "Token not found!"
+    if not user.service_id:
+        return "No service is assigned to your staff account!"
+
+    if token.service_id != user.service_id:
+       return "Access denied! This token belongs to another service."
 
     if status == "serving" and token.status != "waiting":
         return "Only waiting tokens can be called!"
@@ -414,8 +572,7 @@ def update_token(token_id, status):
 
     return redirect(url_for("staff_dashboard"))
 
-    return redirect(url_for("staff_dashboard"))
-
+    
 @app.route("/update-appointment/<int:appointment_id>/<status>", methods=["POST"])
 def update_appointment(appointment_id, status):
     if "user_id" not in session:
@@ -433,6 +590,11 @@ def update_appointment(appointment_id, status):
 
     if not appointment:
         return "Appointment not found!"
+    if not user.service_id:
+        return "No service is assigned to your staff account!"
+
+    if appointment.service_id != user.service_id:
+        return "Access denied! This appointment belongs to another service."
 
     if status == "confirmed" and appointment.status != "booked":
         return "Only booked appointments can be confirmed!"

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusQueue - Services</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+   
+
+    <header>
+        <h2>CampusQueue</h2>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/services">Services</a>
+            <a href="/login">Login</a>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <h1>Our College Services</h1>
+        <p>Select a service to manage your college-related requests.</p>
+    </section>
+
+    <section class="services">
+        {% if services %}
+            {% for service in services %}
+                <div class="service-card">
+                    <h2>{{ service.name }}</h2>
+                    <p>{{ service.description or "No description available." }}</p>
+                    <a href="/login" class="btn">Get Started</a>
+                </div>
+            {% endfor %}
+        {% else %}
+            <p>No services are currently available.</p>
+        {% endif %}
+    </section>
+
+    <footer>
+        <p>© 2026 CampusQueue | Smart College Service Management</p>
+    </footer>
+
+</body>
+</html>

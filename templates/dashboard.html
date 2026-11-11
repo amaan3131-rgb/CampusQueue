@@ -73,6 +73,30 @@
         </li>
     {% endfor %}
 </ul>
+
+<h3>My Appointment Summary</h3>
+
+<div class="services">
+    <div class="service-card">
+        <h2>{{ total_appointments }}</h2>
+        <p>Total Appointments</p>
+    </div>
+
+    <div class="service-card">
+        <h2>{{ booked_appointments }}</h2>
+        <p>Booked Appointments</p>
+    </div>
+
+    <div class="service-card">
+        <h2>{{ completed_appointments }}</h2>
+        <p>Completed Appointments</p>
+    </div>
+
+    <div class="service-card">
+        <h2>{{ cancelled_appointments }}</h2>
+        <p>Cancelled Appointments</p>
+    </div>
+</div>
 <h3>My Appointment History</h3>
 
 <table class="data-table">
@@ -81,6 +105,7 @@
         <th>Date</th>
         <th>Time</th>
         <th>Status</th>
+        <th>Action</th>
     </tr>
 
     {% for appointment in appointments %}
@@ -89,6 +114,20 @@
         <td>{{ appointment.appointment_date }}</td>
         <td>{{ appointment.appointment_time }}</td>
         <td>{{ appointment.status }}</td>
+        <td>
+            {% if appointment.status == "booked" %}
+            <form method="POST"
+                  action="{{ url_for('cancel_appointment', appointment_id=appointment.id) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit"
+                        onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                    Cancel
+                </button>
+            </form>
+            {% else %}
+            -
+            {% endif %}
+        </td>
     </tr>
     {% endfor %}
 </table>

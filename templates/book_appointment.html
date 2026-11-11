@@ -27,10 +27,44 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
 
             <label>Select Date</label>
-            <input type="date" name="date" required>
+            <input
+                type="date"
+                name="date"
+                min="{{ today }}"
+                required
+                id="appointment-date"
+            >
 
             <label>Select Time</label>
-            <input type="time" name="time" required>
+            <select name="time" required>
+                <option value="">Choose a time slot</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="10:15">10:15 AM</option>
+                <option value="10:30">10:30 AM</option>
+                <option value="10:45">10:45 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="11:15">11:15 AM</option>
+                <option value="11:30">11:30 AM</option>
+                <option value="11:45">11:45 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="12:15">12:15 PM</option>
+                <option value="12:30">12:30 PM</option>
+                <option value="12:45">12:45 PM</option>
+                
+                <option value="14:00">2:00 PM</option>
+                <option value="14:15">2:15 PM</option>
+                <option value="14:30">2:30 PM</option>
+                <option value="14:45">2:45 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="15:15">3:15 PM</option>
+                <option value="15:30">3:30 PM</option>
+                <option value="15:45">3:45 PM</option>
+            </select>
+
+            <p class="auth-description">
+    Available Monday to Saturday, 10:00 AM to 4:00 PM.
+    Lunch break: 1:00 PM to 2:00 PM. No appointments during lunch.
+</p>
 
             <button type="submit">Confirm Appointment</button>
 
@@ -41,6 +75,26 @@
         </p>
 
     </div>
+
+    <script>
+        const dateInput = document.getElementById("appointment-date");
+
+        const today = new Date();
+        const localDate = new Date(
+            today.getTime() - today.getTimezoneOffset() * 60000
+        ).toISOString().split("T")[0];
+
+        dateInput.min = localDate;
+
+        dateInput.addEventListener("change", function () {
+            const selectedDate = new Date(this.value + "T12:00:00");
+
+            if (selectedDate.getDay() === 0) {
+                alert("Appointments are not available on Sundays.");
+                this.value = "";
+            }
+        });
+    </script>
 
 </body>
 </html>

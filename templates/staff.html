@@ -10,6 +10,29 @@
     <h1>Welcome, {{ user.name }}!</h1>
     <h2 class="dashboard-heading">Staff Dashboard</h2>
 <p class="dashboard-subtitle">Manage student queues and appointments efficiently.</p>
+<h3>Appointment Summary</h3>
+
+<div class="services">
+    <div class="service-card">
+        <h2>{{ total_appointments }}</h2>
+        <p>Total Appointments</p>
+    </div>
+
+    <div class="service-card">
+        <h2>{{ booked_appointments }}</h2>
+        <p>Booked Appointments</p>
+    </div>
+
+    <div class="service-card">
+        <h2>{{ confirmed_appointments }}</h2>
+        <p>Confirmed Appointments</p>
+    </div>
+
+    <div class="service-card">
+        <h2>{{ completed_appointments }}</h2>
+        <p>Completed Appointments</p>
+    </div>
+</div>
 
     <h3>Student Queue</h3>
 
@@ -87,6 +110,6 @@
     </tr>
     {% endfor %}
 </table>
-</body>
 </div>
+</body>
 </html>
